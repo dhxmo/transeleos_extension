@@ -1,7 +1,7 @@
 (() => {
     let youtubePlayer;
-    let youtubePlayerHopTo;
-    let youtubeMuteButton;
+    // let youtubePlayerHopTo;
+    // let youtubeMuteButton;
 
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type } = obj;
@@ -11,29 +11,20 @@
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
             // hop to in audio stream
-            youtubePlayerHopTo = youtubePlayer.currentTime;
+            // youtubePlayerHopTo = youtubePlayer.currentTime;
 
             // mute button class
-            youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
-        } else if (type === "ACTIVE") {
-            // if active --> mute youtube audio --->  play translated audio
-
-            youtubePlayer.currentTime = value;
-        } else if (type === "INACTIVE") {
-            // if inactive --> mute translated audio ---> play youtube audio
+            // youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
+        } else if (type === "MUTE_YOUTUBE_AUDIO") {
+            // Mute the YouTube video's audio
+            if (youtubePlayer) {
+                youtubePlayer.muted = true;
+            }
+        } else if (type === "UNMUTE_YOUTUBE_AUDIO") {
+            // Unmute the YouTube video's audio
+            if (youtubePlayer) {
+                youtubePlayer.muted = false;
+            }
         }
     });
-
-    const newVideoLoaded = () => {
-
-    }
-
-    // TODO: get audio file stored locally for the current video: chrome.storage.sync.get
-
-    // TODO: on play button on youtube player, 
-    // mute the video
-    // play audio from storage
-    // sync on timestamp
-
-    newVideoLoaded();
 })();
