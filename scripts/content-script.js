@@ -1,5 +1,7 @@
 (() => {
     let youtubePlayer;
+    let lastVideoTime = 0; // Store the last known video time
+
     // let youtubePlayerHopTo;
     // let youtubeMuteButton;
 
@@ -12,6 +14,19 @@
 
             // hop to in audio stream
             // youtubePlayerHopTo = youtubePlayer.currentTime;
+
+            youtubePlayer.addEventListener("timeupdate", () => {
+                const videoTime = youtubePlayer.currentTime;
+
+                // Check if the video time has changed
+                if (videoTime !== lastVideoTime) {
+                    // Send an event to the popup script with the updated video time
+                    chrome.runtime.sendMessage({ type: "VIDEO_TIME_CHANGED", videoTime });
+
+                    // Update the last known video time
+                    lastVideoTime = videoTime;
+                }
+            });
 
             // mute button class
             // youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];

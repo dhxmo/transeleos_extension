@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const currentVideo = urlParameters.get("v");
 
+    const container = document.getElementsByClassName("container")[0];
+
     //if audio is stored in localthen show active/inactive button. active by default
     chrome.storage.local.get("translatedAudio", (result) => {
         const translatedAudio = result.translatedAudio;
@@ -20,11 +22,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 showActiveInactiveButton();
             } else {
                 // Translated audio is not available in local storage
-                showNoTranslatedAudioMessage();
+                container.innerHTML = '<div class="title">Translated audio is not available.</div>';
             }
         } else {
             // Not a YouTube video
-            const container = document.getElementsByClassName("container")[0];
             container.innerHTML = '<div class="title">transeleos only works on youtube videos</div>';
         }
     });
@@ -59,11 +60,6 @@ function showActiveInactiveButton() {
     });
 }
 
-// Function to show a message when translated audio is not available
-function showNoTranslatedAudioMessage() {
-    const container = document.getElementsByClassName("container")[0];
-    container.innerHTML = '<div class="title">Translated audio is not available.</div>';
-}
 
 // Add an event listener to the submit button
 document.getElementById("submit").addEventListener("click", async () => {
@@ -172,7 +168,7 @@ function handleMakeActive() {
 }
 
 // Function to play the stored audio
-function playStoredAudio() {
+function playStoredAudio(startTime = 0) {
     // Get the audio data from local storage
     chrome.storage.local.get("translatedAudio", (result) => {
         const audioBlob = result.translatedAudio;
@@ -182,6 +178,9 @@ function playStoredAudio() {
             const audioURL = URL.createObjectURL(audioBlob);
             audio.src = audioURL;
 
+            // Set the audio's current time to the specified start time
+            audio.currentTime = startTime;
+
             // Play the audio
             audio.play();
         } else {
@@ -189,6 +188,7 @@ function playStoredAudio() {
         }
     });
 }
+
 
 // Function to handle "Make Inactive" action
 function handleMakeInactive() {
@@ -209,3 +209,14 @@ function muteStoredAudio() {
         audio.pause();
     }
 }
+
+// Add a listener to handle messages from the content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "VIDEO_TIME_CHANGED") {
+        // Handle the video time change event
+        const videoTime = message.videoTime;
+
+        // Update the audio time based on the video time
+        playStoredAudio(videoTime);
+    }
+});
