@@ -6,7 +6,8 @@
   "description": "so nothing gets lost in translation",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "tabs"
   ],
   "host_permissions": [
     "https://*.youtube.com/*"
