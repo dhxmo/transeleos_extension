@@ -1,5 +1,9 @@
 import { getCurrentTab } from "../scripts/utils.js";
 
+// Initialize a variable to keep track of the button state
+let isAudioActive = true; // Set to true by default
+let isVideoLengthOk = true; // Set to true by default
+
 document.addEventListener("DOMContentLoaded", async () => {
     const currentTab = await getCurrentTab();
 
@@ -29,10 +33,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             container.innerHTML = '<div class="title">transeleos only works on youtube videos</div>';
         }
     });
+
+    // Add an event listener to the submit button
+    document.getElementById("submit").addEventListener("click", async () => {
+        if (isVideoLengthOk) {
+            await submitButtonEvent();
+        } else {
+            showNotification("We only support translations for videos up to 10 minutes.", true);
+            transeleosForm.style.display = "none";
+        }
+    });
 });
 
-// Initialize a variable to keep track of the button state
-let isAudioActive = true; // Set to true by default
+
 
 // Function to show the active/inactive button
 function showActiveInactiveButton() {
@@ -60,9 +73,23 @@ function showActiveInactiveButton() {
     });
 }
 
+// Add a listener to handle messages from the content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "VIDEO_DURATION") {
+        // Handle the video duration message
+        const videoDuration = message.videoDuration;
+        const transeleosForm = document.getElementById("transeleos_form");
 
-// Add an event listener to the submit button
-document.getElementById("submit").addEventListener("click", async () => {
+        if (videoDuration > 10 * 60) { // 10 minutes in seconds
+            showNotification("We only support translations for videos up to 10 minutes.", true);
+            transeleosForm.style.display = "none";
+            isVideoLengthOk = False;
+        }
+    }
+});
+
+
+const submitButtonEvent = async () => {
     // Hide the select and submit button
     const transeleosForm = document.getElementById("transeleos_form");
     transeleosForm.style.display = "none";
@@ -133,7 +160,7 @@ document.getElementById("submit").addEventListener("click", async () => {
         loadingContainer.style.display = "none";
         transeleosForm.style.display = "block";
     }
-});
+}
 
 
 // Function to show a notification message

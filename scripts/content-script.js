@@ -12,6 +12,9 @@
             // fetch youtube player stream
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
+            const videoDuration = youtubePlayer.duration;
+            chrome.runtime.sendMessage({ type: "VIDEO_DURATION", videoDuration });
+
             // hop to in audio stream
             // youtubePlayerHopTo = youtubePlayer.currentTime;
 
