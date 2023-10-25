@@ -3,43 +3,37 @@
     let youtubePlayerHopTo;
     let youtubeMuteButton;
 
-    let currentTabUrl = "";
-    let currentVideo = "";
-
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
-        const { type, tabUrl, videoId } = obj;
+        const { type } = obj;
 
         if (type === "NEW") {
-            currentTabUrl = tabUrl;
-            currentVideo = videoId;
+            // fetch youtube player stream
+            youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
-            newVideoLoaded();
-        } else if (type === "PLAY") {
-            // if play --> from onPlay ---> move youtubePlayer to to value
+            // hop to in audio stream
+            youtubePlayerHopTo = youtubePlayer.currentTime;
+
+            // mute button class
+            youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
+        } else if (type === "ACTIVE") {
+            // if active --> mute youtube audio --->  play translated audio
 
             youtubePlayer.currentTime = value;
-        } else if (type === "PAUSE") {
-            // if pause --> pause audio from playbacking against video 
+        } else if (type === "INACTIVE") {
+            // if inactive --> mute translated audio ---> play youtube audio
         }
     });
 
     const newVideoLoaded = () => {
-        // fetch youtube player stream
-        youtubePlayer = document.getElementsByClassName("video-stream")[0];
-        // hop to in audio stream
-        youtubePlayerHopTo = youtubePlayer.currentTime;
-        // mute button class
-        youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
+
     }
 
-    // get audio file stored locally for the current video
-    // const fetchBookmarks = () => {
-    //     return new Promise((resolve) => {
-    //         chrome.storage.sync.get([currentVideo], (obj) => {
-    //             resolve(obj[currentVideo] ? JSON.parse(obj[currentVideo]) : []);
-    //         });
-    //     });
-    // };
+    // TODO: get audio file stored locally for the current video: chrome.storage.sync.get
+
+    // TODO: on play button on youtube player, 
+    // mute the video
+    // play audio from storage
+    // sync on timestamp
 
     newVideoLoaded();
 })();
