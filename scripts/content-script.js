@@ -12,37 +12,36 @@
             // fetch youtube player stream
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
-            const videoDuration = youtubePlayer.duration;
-            chrome.runtime.sendMessage({ type: "VIDEO_DURATION", videoDuration });
+            // Check if the video duration is greater than 10 minutes
+            if (youtubePlayer.duration / 60 > 10) {
+                // chrome.action.setPopup({ popup: 'popdown.html' });
+            }
 
-            // hop to in audio stream
-            // youtubePlayerHopTo = youtubePlayer.currentTime;
+            // youtubePlayer.addEventListener("timeupdate", () => {
+            //     const videoTime = youtubePlayer.currentTime;
 
-            youtubePlayer.addEventListener("timeupdate", () => {
-                const videoTime = youtubePlayer.currentTime;
+            //     // Check if the video time has changed
+            //     if (videoTime !== lastVideoTime) {
+            //         // Send an event to the popup script with the updated video time
+            //         chrome.runtime.sendMessage({ type: "VIDEO_TIME_CHANGED", videoTime });
 
-                // Check if the video time has changed
-                if (videoTime !== lastVideoTime) {
-                    // Send an event to the popup script with the updated video time
-                    chrome.runtime.sendMessage({ type: "VIDEO_TIME_CHANGED", videoTime });
-
-                    // Update the last known video time
-                    lastVideoTime = videoTime;
-                }
-            });
+            //         // Update the last known video time
+            //         lastVideoTime = videoTime;
+            //     }
+            // });
 
             // mute button class
             // youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
-        } else if (type === "MUTE_YOUTUBE_AUDIO") {
-            // Mute the YouTube video's audio
-            if (youtubePlayer) {
-                youtubePlayer.muted = true;
-            }
-        } else if (type === "UNMUTE_YOUTUBE_AUDIO") {
-            // Unmute the YouTube video's audio
-            if (youtubePlayer) {
-                youtubePlayer.muted = false;
-            }
+            // } else if (type === "MUTE_YOUTUBE_AUDIO") {
+            //     // Mute the YouTube video's audio
+            //     if (youtubePlayer) {
+            //         youtubePlayer.muted = true;
+            //     }
+            // } else if (type === "UNMUTE_YOUTUBE_AUDIO") {
+            //     // Unmute the YouTube video's audio
+            //     if (youtubePlayer) {
+            //         youtubePlayer.muted = false;
+            //     }
         }
     });
 })();
