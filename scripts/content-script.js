@@ -1,20 +1,29 @@
-(() => {
+(async () => {
     let youtubePlayer;
-    let lastVideoTime = 0; // Store the last known video time
+    // let lastVideoTime = 0; // Store the last known video time
 
     // let youtubePlayerHopTo;
     // let youtubeMuteButton;
 
-    chrome.runtime.onMessage.addListener((obj, sender, response) => {
+    // if (document.readyState === "complete") {
+    //     transeleosDOMManus();
+    // } else {
+    //     window.addEventListener("load", transeleosDOMManus);
+    // }
+
+    // const transeleosDOMManus = async () => {
+    await chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type } = obj;
 
-        if (type === "NEW") {
+        if (type === "NEW_YOUTUBE_TAB") {
             // fetch youtube player stream
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
             // Check if the video duration is greater than 10 minutes
-            if (youtubePlayer.duration / 60 > 10) {
-                // chrome.action.setPopup({ popup: 'popdown.html' });
+            if (youtubePlayer && youtubePlayer.duration / 60 > 10) {
+                chrome.runtime.sendMessage({ action: "setPopDown" });
+            } else {
+                chrome.runtime.sendMessage({ action: "setPopUp" });
             }
 
             // youtubePlayer.addEventListener("timeupdate", () => {
@@ -44,4 +53,7 @@
             //     }
         }
     });
+    // }
+
+
 })();

@@ -64,25 +64,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 //     });
 // }
 
-// Add a listener to handle messages from the content script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === "VIDEO_DURATION_EXCEED") {
-
-        // Handle the video duration message
-        const videoDuration = message.videoDuration;
-        console.log("received duration exceed msg. videoDuration", videoDuration);
-
-        const transeleosForm = document.getElementById("transeleos_form");
-        transeleosForm.style.display = "none";
-
-        // if (videoDuration > 10 * 60) { // 10 minutes in seconds
-        isVideoLengthOk = false;
-
-        showNotification("We only support translations for videos up to 10 minutes.", true);
-        // }
-    }
-});
-
 chrome.runtime.onConnect.addListener((port) => {
     if (port.name === "videoDurationCheck") {
         port.onMessage.addListener((message) => {
