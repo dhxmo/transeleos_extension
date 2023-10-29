@@ -2,15 +2,6 @@
     let youtubePlayer;
     // let lastVideoTime = 0; // Store the last known video time
 
-    // let youtubePlayerHopTo;
-    // let youtubeMuteButton;
-
-    // if (document.readyState === "complete") {
-    //     transeleosDOMManus();
-    // } else {
-    //     window.addEventListener("load", transeleosDOMManus);
-    // }
-
     // const transeleosDOMManus = async () => {
     await chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type } = obj;
