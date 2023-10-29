@@ -1,8 +1,8 @@
 import { getCurrentTab, showNotification } from "../scripts/utils.js";
 
 // Initialize a variable to keep track of the button state
-let isAudioActive = true; // Set to true by default
-let isVideoLengthOk = true; // Set to true by default
+// let isAudioActive = true; // Set to true by default
+// let isVideoLengthOk = true; // Set to true by default
 
 document.addEventListener("DOMContentLoaded", async () => {
     const currentTab = await getCurrentTab();
@@ -16,21 +16,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const container = document.getElementsByClassName("container")[0];
 
-    //if audio is stored in localthen show active/inactive button. active by default
-    chrome.storage.local.get("translatedAudio", (result) => {
+    if (currentTab.url.includes("youtube.com/watch") && currentVideo) {
+        // if audio is stored in local then show active/inactive button. active by default
+        // chrome.storage.local.get("translatedAudio", (result) => {
         // const translatedAudio = result.translatedAudio;
+        // });
 
-        if (currentTab.url.includes("youtube.com/watch") && currentVideo) {
-            // if (translatedAudio) {
-            //     // Translated audio is available, so show the active/inactive button
-            //     showActiveInactiveButton();
-            // }
-        } else {
-            // Not a YouTube video
-            container.innerHTML = '<div class="title">transeleos only works on youtube videos</div>';
-        }
-    });
-
+        // if (translatedAudio) {
+        //     // Translated audio is available, so show the active/inactive button
+        //     showActiveInactiveButton();
+        // }
+    } else {
+        // Not a YouTube video
+        container.innerHTML = '<div class="title">transeleos only works on youtube videos</div>';
+    }
 });
 
 // document.getElementById("submit").addEventListener("click", async () => {

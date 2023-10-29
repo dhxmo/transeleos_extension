@@ -6,12 +6,3 @@ chrome.tabs.onUpdated.addListener((tabId, tab) => {
     });
   }
 });
-
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "setPopDown") {
-    chrome.action.setPopup({ popup: 'popup/popdown.html' });
-  } else if (message.action === "setPopUp") {
-    chrome.action.setPopup({ popup: 'popup/popup.html' });
-  }
-});

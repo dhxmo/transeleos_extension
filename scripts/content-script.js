@@ -1,5 +1,6 @@
 (async () => {
-    let youtubePlayer;
+    let youtubePlayer, youtubeDuration;
+
     // let lastVideoTime = 0; // Store the last known video time
 
     // const transeleosDOMManus = async () => {
@@ -9,13 +10,8 @@
         if (type === "NEW_YOUTUBE_TAB") {
             // fetch youtube player stream
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
-
-            // Check if the video duration is greater than 10 minutes
-            if (youtubePlayer && youtubePlayer.duration / 60 > 10) {
-                chrome.runtime.sendMessage({ action: "setPopDown" });
-            } else {
-                chrome.runtime.sendMessage({ action: "setPopUp" });
-            }
+            // youtube duration in minutes
+            youtubeDuration = youtubePlayer.duration / 60;
 
             // youtubePlayer.addEventListener("timeupdate", () => {
             //     const videoTime = youtubePlayer.currentTime;
