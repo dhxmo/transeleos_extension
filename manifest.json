@@ -10,7 +10,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://*.youtube.com/*"
+    "https://*.youtube.com/*",
+    "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/*"
   ],
   "background": {
     "service_worker": "service-worker.js"
