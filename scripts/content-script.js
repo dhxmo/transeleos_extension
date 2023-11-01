@@ -1,5 +1,5 @@
 (async () => {
-    let youtubePlayer, youtubeLeftControls, audioInfo, audioElement, popupMenu, buttonRect;
+    let youtubePlayer, youtubeRightControls, audioInfo, audioElement, popupMenu, buttonRect;
 
     console.log('Content script is running');
 
@@ -28,12 +28,14 @@
 
             //  left side control buttons
             //  mute button class --> ytp-mute-button ytp-button
-            youtubeLeftControls = document.getElementsByClassName("ytp-left-controls")[0];
+            youtubeRightControls = document.getElementsByClassName("ytp-right-controls")[0];
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
-            if (youtubePlayer.duration / 60 < 10) {
-                // add our button to youtube player
-                youtubeLeftControls.append(logoBtn);
+            if (youtubePlayer && youtubePlayer.duration / 60 < 10) {
+                if (logoBtn.parentNode !== youtubeRightControls) {
+                    // Append logoBtn as the first child of youtubeRightControls
+                    youtubeRightControls.insertBefore(logoBtn, youtubeRightControls.firstChild);
+                }
 
                 //  on logo click, open widget window
                 logoBtn.addEventListener("click", (event) => openTranseleosEventHandler(event));
@@ -199,7 +201,15 @@
     newVideoLoaded();
 })();
 
+// On audio fetch start playing the video. mute its audio, play the translated audio
+
+// the timestamps need to be linked
+
+// toggle active/inactive. if pressed, mute fetched audio and play yt audio
+
 // TODO: mute button when audio playing is enabled. else mute audio and turn this on
 // youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
 
 // TODO: jump to time in audio for the time on the youtube stream
+
+// TODO: read playback speed from youtube player and reflect in audio 
