@@ -10,7 +10,12 @@
   <body>
     <div class="container">
       <div class="transeleos_main">
-        <img src="../assets/logo.png" alt="logo" id="logo" />
+        <img
+          src="../assets/logo-no-bg.png"
+          alt="logo"
+          id="logo"
+          style="width: 200px; height: 200px"
+        />
 
         <!-- Add a div to display notifications -->
         <div id="notification" style="display: none"></div>
@@ -20,29 +25,6 @@
             <div class="spinner"></div>
             <p>This takes a while. Please be patient...</p>
           </div>
-
-          <select id="language">
-            <option value="chinese-simplified">Chinese, simplified</option>
-            <option value="english">English</option>
-            <option value="french">French</option>
-            <option value="german">German</option>
-            <option value="hindi">Hindi</option>
-            <option value="italian">Italian</option>
-            <option value="japanese">Japanese</option>
-            <option value="korean">Korean</option>
-            <option value="polish">Polish</option>
-            <option value="portugese">Portugese</option>
-            <option value="russian">Russian</option>
-            <option value="spanish">Spanish</option>
-            <option value="Turkish">Turkish</option>
-          </select>
-          <button id="submit">transeleos!</button>
-        </div>
-
-        <div id="audio-info" style="display: none">
-          <!-- <div id="audio-info"> -->
-          <audio id="translated-audio" controls></audio>
-          <button id="toggle-audio">Active</button>
         </div>
       </div>
 

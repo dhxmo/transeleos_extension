@@ -6,6 +6,7 @@
   "description": "so nothing gets lost in translation",
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "activeTab",
     "tabs"
   ],
@@ -28,7 +29,9 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": [],
+      "resources": [
+        "assets/logo-no-bg.png"
+      ],
       "matches": [
         "https://*.youtube.com/*"
       ]
@@ -36,9 +39,9 @@
   ],
   "action": {
     "default_icon": {
-      "16": "assets/logo.png",
-      "24": "assets/logo.png",
-      "32": "assets/logo.png"
+      "16": "assets/logo-no-bg.png",
+      "24": "assets/logo-no-bg.png",
+      "32": "assets/logo-no-bg.png"
     },
     "default_title": "Transeleos",
     "default_popup": "popup/popup.html"
