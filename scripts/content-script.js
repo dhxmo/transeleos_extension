@@ -1,14 +1,12 @@
 (async () => {
-    let youtubePlayer, youtubePlayButton, youtubeRightControls, audioInfo, audioElement, popupMenu, buttonRect;
+    let currentURL, youtubePlayer, youtubePlayButton, youtubeRightControls, audioInfo, audioElement, popupMenu, buttonRect;
 
     console.log('Content script is running');
 
     // on new youtube tab, inject icon
-    await chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
-        const { type } = obj;
-
-        if (type === "NEW_YOUTUBE_TAB") {
-            console.log('Received NEW_YOUTUBE_TAB message');
+    await chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.type === "NEW_YOUTUBE_TAB") {
+            currentURL = message.currentURL;
             newVideoLoaded();
         }
     });
@@ -118,16 +116,33 @@
                 const selectedLanguage = languageSelect.value;
 
                 // on submit button press, fetch audio from s3 and load to local
-                submitButton.addEventListener("click", () => {
+                submitButton.addEventListener("click", async () => {
                     try {
-                        chrome.runtime.sendMessage({
-                            type: 'FETCH_AUDIO',
-                            language: selectedLanguage
+                        chrome.storage.local.get('audioState', async (result) => {
+                            const audioState = result.audioState;
+
+                            // Audio data exists in local storage
+                            if (audioState &&
+                                audioState.youtubeUrl === currentURL &&
+                                audioState.fetchLanguage === selectedLanguage) {
+
+                                const dataUrl = audioState.audioDataUrl;
+                                await fetchAndSetAudio(dataUrl);
+                            } else {
+                                // Audio data doesn't exist in local storage, fetch it
+                                try {
+                                    chrome.runtime.sendMessage({
+                                        type: 'FETCH_AUDIO',
+                                        language: selectedLanguage
+                                    });
+                                } catch (error) {
+                                    console.error('Error sending FETCH_AUDIO message:', error);
+                                }
+                            }
                         });
                     } catch (error) {
-                        console.error('Error sending FETCH_AUDIO message:', error);
+                        console.error('Error fetching audio from local:', error);
                     }
-
                 });
             }
             isPopupVisible = true;
@@ -145,44 +160,51 @@
     // AUDIO_FETCHED store fetched audio to local storage
     await chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (message.type === "AUDIO_FETCHED") {
-
             const dataUrl = message.audioDataUrl;
-            // Convert the data URL to a Blob
-            const audioBlob = dataURLtoBlob(dataUrl);
-
-            if (audioBlob instanceof Blob) {
-                displayAudioInfo();
-
-                console.log("audio loaded");
-
-                const audioURL = URL.createObjectURL(audioBlob);
-                audioElement.src = audioURL; // Set the source
-                audioElement.currentTime = youtubePlayer.currentTime;
-                audioElement.play(); // Play the audio
-
-                // Mute the video's audio
-                youtubePlayer.muted = true;
-
-                // // Play the video
-                await youtubePlayer.play();
-
-                // Synchronize the audio's time with the video's time
-                youtubePlayer.addEventListener('timeupdate', () => {
-                    audioElement.currentTime = youtubePlayer.currentTime;
-                });
-
-                // Set the local state variables
-                const audioState = {
-                    youtubeUrl: message.youtubeUrl,
-                    audioDataUrl: message.audioDataUrl,
-                    s3AudioURL: message.s3AudioURL,
-                    fetchLanguage: message.fetchLanguage,
-                    audioTimestamp: audioElement.currentTime
-                }
-                chrome.storage.local.set({ audioState });
-            }
+            await fetchAndSetAudio(dataUrl);
         }
     });
+
+    // convert url to blob and set audio element. also set audio in local storage
+    const fetchAndSetAudio = async (dataUrl) => {
+        // Convert the data URL to a Blob
+        const audioBlob = dataURLtoBlob(dataUrl);
+
+        if (audioBlob instanceof Blob) {
+            displayAudioInfo();
+
+            const audioURL = URL.createObjectURL(audioBlob);
+            audioElement.src = audioURL; // Set the source
+            audioElement.currentTime = youtubePlayer.currentTime;
+
+            audioElement.playbackRate = youtubePlayer.playbackRate;
+            audioElement.play(); // Play the audio
+
+            // Mute the video's audio
+            youtubePlayer.muted = true;
+
+            // // Play the video
+            await youtubePlayer.play();
+
+            // Synchronize the audio's time with the video's time
+            youtubePlayer.addEventListener('timeupdate', () => {
+                audioElement.currentTime = youtubePlayer.currentTime;
+            });
+
+            // Add an event listener to the YouTube player's ratechange event
+            youtubePlayer.addEventListener('ratechange', syncAudioSpeedWithPlayer);
+
+            // Set the local state variables
+            const audioState = {
+                youtubeUrl: message.youtubeUrl,
+                audioDataUrl: message.audioDataUrl,
+                s3AudioURL: message.s3AudioURL,
+                fetchLanguage: message.fetchLanguage,
+                audioTimestamp: audioElement.currentTime
+            }
+            chrome.storage.local.set({ audioState });
+        }
+    }
 
     // convert audio url to blob
     function dataURLtoBlob(dataURL) {
@@ -239,21 +261,17 @@
         });
     }
 
+    // Function to synchronize audio speed with YouTube player speed
+    function syncAudioSpeedWithPlayer() {
+        const playerSpeed = youtubePlayer.playbackRate;
+        audioElement.playbackRate = playerSpeed;
+    }
+
     // display icon youtube player
     newVideoLoaded();
 })();
 
-// On audio fetch start playing the video. mute its audio, play the translated audio
-
-// the timestamps need to be linked
 
 // toggle active/inactive. if pressed, mute fetched audio and play yt audio
-
-// TODO: mute button when audio playing is enabled. else mute audio and turn this on
-// youtubeMuteButton = document.getElementsByClassName("ytp-mute-button ytp-button")[0];
-
-// TODO: jump to time in audio for the time on the youtube stream
-
-// TODO: read playback speed from youtube player and reflect in audio 
 
 // TODO: store and fetch audioData specific to the video. use video URL
