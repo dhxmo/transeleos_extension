@@ -11,6 +11,10 @@
   margin: 0 auto;
 }
 
+a {
+  color: #d1d1d1;
+}
+
 h3,
 .title {
   font-weight: bold;

@@ -1,8 +1,9 @@
 (async () => {
-    let youtubePlayer, youtubeRightControls, audioInfo, audioElement, popupMenu, buttonRect;
+    let youtubePlayer, youtubePlayButton, youtubeRightControls, audioInfo, audioElement, popupMenu, buttonRect;
 
     console.log('Content script is running');
 
+    // on new youtube tab, inject icon
     await chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
         const { type } = obj;
 
@@ -12,9 +13,8 @@
         }
     });
 
+    // insert transeleos logo to youtube player
     const newVideoLoaded = async () => {
-        console.log('New video loaded function is called');
-
         // custom class to be added to the player
         const logoBtnExists = document.getElementsByClassName("logo-btn")[0];
 
@@ -29,6 +29,7 @@
             //  left side control buttons
             //  mute button class --> ytp-mute-button ytp-button
             youtubeRightControls = document.getElementsByClassName("ytp-right-controls")[0];
+            youtubePlayButton = document.getElementsByClassName("ytp-play-button")[0];
             youtubePlayer = document.getElementsByClassName("video-stream")[0];
 
             if (youtubePlayer && youtubePlayer.duration / 60 < 10) {
@@ -47,6 +48,7 @@
 
     let isPopupVisible = false; // Track the visibility state
 
+    // on logo click, open widget window
     const openTranseleosEventHandler = async (event) => {
         if (isPopupVisible) {
             // If the popup is visible, hide it
@@ -76,7 +78,6 @@
                     <option value="hindi">Hindi</option>
                     <option value="italian">Italian</option>
                     <option value="japanese">Japanese</option>
-                    <option value="korean">Korean</option>
                     <option value="polish">Polish</option>
                     <option value="portugese">Portugese</option>
                     <option value="russian">Russian</option>
@@ -107,12 +108,16 @@
                 audioInfo = document.getElementById("audio-info");
                 audioElement = document.getElementById("transeleos-translated-audio");
 
-                audioElement.addEventListener('play', handleAudioStateChange);
-                audioElement.addEventListener('pause', handleAudioStateChange);
+                // once audio elemnt is made, keep it synced up with the youtube player
+                syncAudioWithYT();
+
+                // Add an event listener to the audio element for time updates
+                audioElement.addEventListener('timeupdate', handleAudioStateChange);
 
                 const languageSelect = document.getElementById("transeleos-languages");
                 const selectedLanguage = languageSelect.value;
 
+                // on submit button press, fetch audio from s3 and load to local
                 submitButton.addEventListener("click", () => {
                     try {
                         chrome.runtime.sendMessage({
@@ -129,6 +134,7 @@
         }
     };
 
+    // display audio tag in widget
     const displayAudioInfo = () => {
         // show audio div
         audioInfo.style.display = "block";
@@ -136,7 +142,8 @@
         popupMenu.style.top = buttonRect.top - popupMenu.offsetHeight + 'px';
     }
 
-    await chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // AUDIO_FETCHED store fetched audio to local storage
+    await chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (message.type === "AUDIO_FETCHED") {
 
             const dataUrl = message.audioDataUrl;
@@ -146,9 +153,23 @@
             if (audioBlob instanceof Blob) {
                 displayAudioInfo();
 
+                console.log("audio loaded");
+
                 const audioURL = URL.createObjectURL(audioBlob);
                 audioElement.src = audioURL; // Set the source
+                audioElement.currentTime = youtubePlayer.currentTime;
                 audioElement.play(); // Play the audio
+
+                // Mute the video's audio
+                youtubePlayer.muted = true;
+
+                // // Play the video
+                await youtubePlayer.play();
+
+                // Synchronize the audio's time with the video's time
+                youtubePlayer.addEventListener('timeupdate', () => {
+                    audioElement.currentTime = youtubePlayer.currentTime;
+                });
 
                 // Set the local state variables
                 const audioState = {
@@ -163,6 +184,7 @@
         }
     });
 
+    // convert audio url to blob
     function dataURLtoBlob(dataURL) {
         const byteString = atob(dataURL.split(',')[1]);
         const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
@@ -198,6 +220,26 @@
         });
     }
 
+    // Function to keep audio tag and youtube player in sync
+    function syncAudioWithYT() {
+        audioElement.addEventListener('play', () => {
+            youtubePlayer.play();
+        });
+
+        audioElement.addEventListener('pause', () => {
+            youtubePlayer.pause();
+        });
+
+        youtubePlayer.addEventListener('play', () => {
+            audioElement.play();
+        });
+
+        youtubePlayer.addEventListener('pause', () => {
+            audioElement.pause();
+        });
+    }
+
+    // display icon youtube player
     newVideoLoaded();
 })();
 
@@ -213,3 +255,5 @@
 // TODO: jump to time in audio for the time on the youtube stream
 
 // TODO: read playback speed from youtube player and reflect in audio 
+
+// TODO: store and fetch audioData specific to the video. use video URL

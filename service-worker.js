@@ -1,5 +1,6 @@
 let localTabId, localTabURL;
 
+// inform service worker about new youtube tab
 chrome.tabs.onUpdated.addListener((tabId, tab) => {
   if (tab.url && tab.url.includes("youtube.com/watch")) {
 
@@ -23,13 +24,14 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 
     // send to server to return s3 url
     // const s3AudioURL = .....
-    const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/9+minutes+of+Relatable+TikToks.mp3";
+    const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/Jje5VN0bpjc/Jje5VN0bpjc.mp3";
 
     try {
-      // Load and play the audio here in the popup script
+      // Load s3 audio url to blob
       const blobResponse = await loadAndPlayAudio(s3AudioURL);
 
       if (blobResponse instanceof Blob) {
+        // read blob and create url to send to content-script
         const reader = new FileReader();
         reader.onload = function () {
           const dataUrl = reader.result;
@@ -45,6 +47,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             console.error('Error sending AUDIO_FETCHED message:', error);
           }
         };
+        // save blob as url
         reader.readAsDataURL(blobResponse);
       } else {
         console.error("Invalid Blob response.");
@@ -55,6 +58,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   }
 });
 
+// fetch s3 audio and load to blob
 const loadAndPlayAudio = async (s3AudioURL) => {
   const blobResponse = fetch(s3AudioURL, { mode: 'no-cors' })
     .then((response) => {
