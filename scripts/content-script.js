@@ -47,6 +47,7 @@
     let isPopupVisible = false; // Track the visibility state
 
     // on logo click, open widget window
+    // FETCH_AUDIO msg sent when necessary
     const openTranseleosEventHandler = async (event) => {
         if (isPopupVisible) {
             // If the popup is visible, hide it
@@ -92,7 +93,8 @@
                 `;
                 popupMenu.style.position = 'absolute';
                 popupMenu.style.top = buttonRect.top - popupMenu.offsetHeight - 100 + 'px';
-                popupMenu.style.left = buttonRect.left + 'px';
+                popupMenu.style.left = buttonRect.left + 'px';                // If it's unmuted, mute the YouTube player
+
                 popupMenu.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'; // Light black overlay
                 popupMenu.style.padding = '40px'; // Add padding
                 popupMenu.style.borderRadius = '5px'; // Rounded corners
@@ -121,13 +123,22 @@
                         chrome.storage.local.get('audioState', async (result) => {
                             const audioState = result.audioState;
 
-                            // Audio data exists in local storage
+                            // Extract video ID (v) from youtubeUrl
+                            const videoIDMatch = currentURL.match(/[?&]v=([^&]+)/);
+                            const videoID = videoIDMatch ? videoIDMatch[1] : null;
+
+                            // Extract the filename (without extension) from s3Url
+                            const s3UrlParts = audioState.s3AudioURL.split("/");
+                            const s3FilenameWithExtension = s3UrlParts[s3UrlParts.length - 1];
+                            const s3Filename = s3FilenameWithExtension.split(".")[0];
+
+                            // Audio data exists in local storage for selected language 
                             if (audioState &&
                                 audioState.youtubeUrl === currentURL &&
-                                audioState.fetchLanguage === selectedLanguage) {
-
+                                audioState.fetchLanguage === selectedLanguage &&
+                                videoID === s3Filename) {
                                 const dataUrl = audioState.audioDataUrl;
-                                await fetchAndSetAudio(dataUrl);
+                                await fetchAndSetAudio(dataUrl, audioState);
                             } else {
                                 // Audio data doesn't exist in local storage, fetch it
                                 try {
@@ -161,12 +172,12 @@
     await chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (message.type === "AUDIO_FETCHED") {
             const dataUrl = message.audioDataUrl;
-            await fetchAndSetAudio(dataUrl);
+            await fetchAndSetAudio(dataUrl, message);
         }
     });
 
     // convert url to blob and set audio element. also set audio in local storage
-    const fetchAndSetAudio = async (dataUrl) => {
+    const fetchAndSetAudio = async (dataUrl, message) => {
         // Convert the data URL to a Blob
         const audioBlob = dataURLtoBlob(dataUrl);
 
@@ -252,6 +263,15 @@
             youtubePlayer.pause();
         });
 
+        audioElement.addEventListener('volumechange', () => {
+            console.log("volume change initiated");
+            if (audioElement.muted) {
+                youtubePlayer.muted = false;
+            } else {
+                youtubePlayer.muted = true;
+            }
+        });
+
         youtubePlayer.addEventListener('play', () => {
             audioElement.play();
         });
@@ -273,5 +293,7 @@
 
 
 // toggle active/inactive. if pressed, mute fetched audio and play yt audio
+
+// TODO: add 'please wait, this could take 5-10 minutes' notification
 
 // TODO: store and fetch audioData specific to the video. use video URL

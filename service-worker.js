@@ -18,10 +18,6 @@ chrome.tabs.onUpdated.addListener((tabId, tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-  if (request.type === 'TRANSLATE_AUDIO') { }
-});
-
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   // const outputLang = request.output_lang
@@ -30,10 +26,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 
     const selectedLanguage = request.language;
 
-    // send to server to return s3 url
+    // TODO: add req to server
+    //  send to server to return s3 url
+
     // const s3AudioURL = .....
 
-    const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/Jje5VN0bpjc/Jje5VN0bpjc.mp3";
+    const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/Jje5VN0bpjc/hi/Jje5VN0bpjc.mp3";
 
     try {
       // Load s3 audio url to blob
