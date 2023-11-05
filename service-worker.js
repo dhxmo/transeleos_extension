@@ -24,14 +24,17 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   // currentURL = localTabURL
   if (request.type === 'FETCH_AUDIO') {
 
+    const url = request.url;
     const selectedLanguage = request.language;
 
+
     // TODO: add req to server
-    //  send to server to return s3 url
+    // fetch req
 
-    // const s3AudioURL = .....
+    const transeleos_endpoint = `https://transeleos.com/store_translated_audio?url=${url}&language=${selectedLanguage}`;
+    const s3AudioURL = fetch(transeleos_endpoint, { mode: 'no-cors' })
 
-    const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/Jje5VN0bpjc/hi/Jje5VN0bpjc.mp3";
+    // const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/Jje5VN0bpjc/hi/Jje5VN0bpjc.mp3";
 
     try {
       // Load s3 audio url to blob

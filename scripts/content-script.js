@@ -70,18 +70,32 @@
                 <div id="notification" style="display: none"></div>
 
                 <select id="transeleos-languages" style="padding: 5px; border-radius: 5px;">
-                    <option value="chinese-simplified">Chinese, simplified</option>
-                    <option value="english">English</option>
-                    <option value="french">French</option>
-                    <option value="german">German</option>
-                    <option value="hindi">Hindi</option>
-                    <option value="italian">Italian</option>
-                    <option value="japanese">Japanese</option>
-                    <option value="polish">Polish</option>
-                    <option value="portugese">Portugese</option>
-                    <option value="russian">Russian</option>
-                    <option value="spanish">Spanish</option>
-                    <option value="turkish">Turkish</option>
+                    <option value="bg">Български</option>
+                    <option value="cz">Čeština</option>
+                    <option value="da">Dansk</option>
+                    <option value="de">Deutsch</option>
+                    <option value="el">Ελληνικά</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="et">Eesti</option>
+                    <option value="fa">فارسی</option>
+                    <option value="fi">Suomi</option>
+                    <option value="fr">Français</option>
+                    <option value="hr">Hrvatski</option>
+                    <option value="hu">Magyar</option>
+                    <option value="it">Italiano</option>
+                    <option value="ja">日本語</option>
+                    <option value="lv">Latviešu</option>
+                    <option value="lt">Lietuvių</option>
+                    <option value="mt">Malti</option>
+                    <option value="nl">Nederlands</option>
+                    <option value="pl">Polski</option>
+                    <option value="pt">Português</option>
+                    <option value="ro">Română</option>
+                    <option value="sk">Slovenčina</option>
+                    <option value="sv">Svenska</option>
+                    <option value="tr">Türkçe</option>
+                    <option value="zh-CN">简体中文</option>
                 </select>
                 <button id="transeleos-submit"
                         style="margin-left: 20px; padding: 5px; border-radius: 5px;">transeleos!</button>
@@ -144,6 +158,7 @@
                                 try {
                                     chrome.runtime.sendMessage({
                                         type: 'FETCH_AUDIO',
+                                        url: currentURL,
                                         language: selectedLanguage
                                     });
                                 } catch (error) {
