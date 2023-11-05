@@ -23,45 +23,46 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   // const outputLang = request.output_lang
   // currentURL = localTabURL
   if (request.type === 'FETCH_AUDIO') {
-
     const url = request.url;
     const selectedLanguage = request.language;
 
-
-    // TODO: add req to server
-    // fetch req
-
-    const transeleos_endpoint = `https://transeleos.com/store_translated_audio?url=${url}&language=${selectedLanguage}`;
-    const s3AudioURL = fetch(transeleos_endpoint, { mode: 'no-cors' })
-
-    // const s3AudioURL = "https://giffe.s3.ap-south-1.amazonaws.com/translated_audio/Jje5VN0bpjc/hi/Jje5VN0bpjc.mp3";
+    const transeleos_endpoint = `https://www.transeleos.com/store_translated_audio?url=${url}&language=${selectedLanguage}`;
 
     try {
-      // Load s3 audio url to blob
-      const blobResponse = await loadAndPlayAudio(s3AudioURL);
+      fetch(transeleos_endpoint, { mode: 'cors' })
+        .then(async (response) => {
+          if (response.ok) {
+            const data = await response.json();
+            const s3AudioURL = data["s3Url"];
 
-      if (blobResponse instanceof Blob) {
-        // read blob and create url to send to content-script
-        const reader = new FileReader();
-        reader.onload = function () {
-          const dataUrl = reader.result;
-          try {
-            chrome.tabs.sendMessage(localTabId, {
-              type: "AUDIO_FETCHED",
-              youtubeUrl: localTabURL,
-              audioDataUrl: dataUrl, // Send the data URL
-              s3AudioURL: s3AudioURL,
-              fetchLanguage: selectedLanguage
-            });
-          } catch (error) {
-            console.error('Error sending AUDIO_FETCHED message:', error);
+            // Load s3 audio url to blob
+            const blobResponse = await loadAndPlayAudio(s3AudioURL);
+
+            if (blobResponse instanceof Blob) {
+              // read blob and create url to send to content-script
+              const reader = new FileReader();
+              reader.onload = function () {
+                const dataUrl = reader.result;
+                try {
+                  chrome.tabs.sendMessage(localTabId, {
+                    type: "AUDIO_FETCHED",
+                    youtubeUrl: localTabURL,
+                    audioDataUrl: dataUrl, // Send the data URL
+                    s3AudioURL: s3AudioURL,
+                    fetchLanguage: selectedLanguage
+                  });
+                } catch (error) {
+                  console.error('Error sending AUDIO_FETCHED message:', error);
+                }
+              };
+              // save blob as url
+              reader.readAsDataURL(blobResponse);
+            } else {
+              console.error("Invalid Blob response.");
+            }
           }
-        };
-        // save blob as url
-        reader.readAsDataURL(blobResponse);
-      } else {
-        console.error("Invalid Blob response.");
-      }
+
+        });
     } catch (error) {
       console.error("Error while fetching and playing audio:", error);
     }

@@ -1,5 +1,7 @@
 (async () => {
-    let currentURL, youtubePlayer, youtubePlayButton, youtubeRightControls, audioInfo, audioElement, popupMenu, buttonRect;
+    let currentURL, youtubePlayer, youtubePlayButton,
+        youtubeRightControls, audioInfo, selectedLanguage,
+        audioElement, popupMenu, buttonRect;
 
     console.log('Content script is running');
 
@@ -13,6 +15,7 @@
 
     // insert transeleos logo to youtube player
     const newVideoLoaded = async () => {
+        console.log("new video loaded");
         // custom class to be added to the player
         const logoBtnExists = document.getElementsByClassName("logo-btn")[0];
 
@@ -49,6 +52,7 @@
     // on logo click, open widget window
     // FETCH_AUDIO msg sent when necessary
     const openTranseleosEventHandler = async (event) => {
+        console.log("openTranseosEventHandler");
         if (isPopupVisible) {
             // If the popup is visible, hide it
             popupMenu = document.getElementById('transeleos-widget');
@@ -125,16 +129,21 @@
                 // once audio elemnt is made, keep it synced up with the youtube player
                 syncAudioWithYT();
 
-                // Add an event listener to the audio element for time updates
-                audioElement.addEventListener('timeupdate', handleAudioStateChange);
+                youtubePlayer.addEventListener('seeking', () => {
+                    audioElement.currentTime = youtubePlayer.currentTime;
+                });
 
                 const languageSelect = document.getElementById("transeleos-languages");
-                const selectedLanguage = languageSelect.value;
+                languageSelect.addEventListener("change", (event) => {
+                    selectedLanguage = event.target.value;
+                });
 
                 // on submit button press, fetch audio from s3 and load to local
                 submitButton.addEventListener("click", async () => {
+                    console.log("submit button clicked");
                     try {
                         chrome.storage.local.get('audioState', async (result) => {
+                            console.log("getting local audio");
                             const audioState = result.audioState;
 
                             // Extract video ID (v) from youtubeUrl
@@ -155,6 +164,7 @@
                                 await fetchAndSetAudio(dataUrl, audioState);
                             } else {
                                 // Audio data doesn't exist in local storage, fetch it
+                                console.log("fetching audio from server");
                                 try {
                                     chrome.runtime.sendMessage({
                                         type: 'FETCH_AUDIO',
@@ -177,6 +187,7 @@
 
     // display audio tag in widget
     const displayAudioInfo = () => {
+        console.log("displayAudioInfo");
         // show audio div
         audioInfo.style.display = "block";
         audioElement.setAttribute('controls', 'true'); // By default, make the audio tag clickable
@@ -193,6 +204,7 @@
 
     // convert url to blob and set audio element. also set audio in local storage
     const fetchAndSetAudio = async (dataUrl, message) => {
+        console.log("fetched audio from local storage");
         // Convert the data URL to a Blob
         const audioBlob = dataURLtoBlob(dataUrl);
 
@@ -204,18 +216,13 @@
             audioElement.currentTime = youtubePlayer.currentTime;
 
             audioElement.playbackRate = youtubePlayer.playbackRate;
-            audioElement.play(); // Play the audio
+            // audioElement.play(); // Play the audio
 
             // Mute the video's audio
             youtubePlayer.muted = true;
 
             // // Play the video
             await youtubePlayer.play();
-
-            // Synchronize the audio's time with the video's time
-            youtubePlayer.addEventListener('timeupdate', () => {
-                audioElement.currentTime = youtubePlayer.currentTime;
-            });
 
             // Add an event listener to the YouTube player's ratechange event
             youtubePlayer.addEventListener('ratechange', syncAudioSpeedWithPlayer);
@@ -231,6 +238,8 @@
             chrome.storage.local.set({ audioState });
         }
     }
+
+
 
     // convert audio url to blob
     function dataURLtoBlob(dataURL) {
@@ -248,6 +257,7 @@
 
     // Function to handle play and pause events
     function handleAudioStateChange() {
+        console.log("handleAudioStateChange");
         let localAudioState;
 
         chrome.storage.local.get('audioState', (result) => {
@@ -270,11 +280,14 @@
 
     // Function to keep audio tag and youtube player in sync
     function syncAudioWithYT() {
+        console.log("syncAudioWithYT");
         audioElement.addEventListener('play', () => {
+            console.log("play event listeners");
             youtubePlayer.play();
         });
 
         audioElement.addEventListener('pause', () => {
+            console.log("pause event listeners");
             youtubePlayer.pause();
         });
 
@@ -298,6 +311,7 @@
 
     // Function to synchronize audio speed with YouTube player speed
     function syncAudioSpeedWithPlayer() {
+        console.log("syncing rate change");
         const playerSpeed = youtubePlayer.playbackRate;
         audioElement.playbackRate = playerSpeed;
     }
@@ -306,8 +320,6 @@
     newVideoLoaded();
 })();
 
-
-// toggle active/inactive. if pressed, mute fetched audio and play yt audio
 
 // TODO: add 'please wait, this could take 5-10 minutes' notification
 
